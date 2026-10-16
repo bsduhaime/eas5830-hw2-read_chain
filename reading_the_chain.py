@@ -11,12 +11,29 @@ from web3.providers.rpc import HTTPProvider
 # infura_url = f"https://mainnet.infura.io/v3/{infura_token}"
 
 def connect_to_eth():
-	# TODO insert your code for this method from last week's assignment
+	url = "https://eth-mainnet.g.alchemy.com/v2/alch_vOYi6Z-n40Yh1t6OVQlKe"
+	w3 = Web3(HTTPProvider(url))
+	assert w3.is_connected(), f"Failed to connect to provider at {url}"
 	return w3
 
 
 def connect_with_middleware(contract_json):
-	# TODO insert your code for this method from last week's assignment
+	with open(contract_json, "r") as f:
+		d = json.load(f)
+		d = d['bsc']
+		address = d['address']
+		abi = d['abi']
+
+	# TODO complete this method
+	# The first section will be the same as "connect_to_eth()" but with a BNB url
+	w3 = Web3(HTTPProvider("https://bnb-testnet.g.alchemy.com/v2/alch_vOYi6Z-n40Yh1t6OVQlKe"))
+
+	# The second section requires you to inject middleware into your w3 object and
+	# create a contract object. Read more on the docs pages at https://web3py.readthedocs.io/en/stable/middleware.html
+	# and https://web3py.readthedocs.io/en/stable/web3.contract.html
+	w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
+	contract = w3.eth.contract(address=address, abi=abi)
+
 	return w3, contract
 
 
@@ -33,13 +50,24 @@ def is_ordered_block(w3, block_num):
 
 	Conveniently, most type 2 transactions set the gasPrice field to be min( tx.maxPriorityFeePerGas + block.baseFeePerGas, tx.maxFeePerGas )
 	"""
-	block = w3.eth.get_block(block_num, full_transactions=True)
-	ordered = False
-
-	# TODO YOUR CODE HERE
-
-	return ordered
-
+	base_fee = w3.eth.get_block(block_num, full_transactions=False).get('baseFeePerGas')	# For Type 2 transactions
+	transaction_count = w3.eth.get_block_transaction_count(block_num)
+	if(transaction_count <= 0):	# empty blocks are not valid
+		return False
+	old_fee = float('inf')	# Start with an extremely large number for decreasing comparison
+	for i in range(transaction_count):
+		curr_fee = 0
+		transaction = w3.eth.get_transaction_by_block(block_num, i)
+		gas_price = transaction.get('gasPrice')
+		if gas_price is None:	# Type 2 transaction
+			max_priority = transaction.get('maxPriorityFeePerGas')
+			max_fee = transaction.get('maxFeePerGas')
+			curr_fee = min(max_priority, max_fee - base_fee)
+		else:	# Type 0 transaction
+			curr_fee = gas_price - base fee
+		if curr_fee > old_fee:	# Means this fee is larger than the previous fee, so not sorted descending.
+			return False
+	return True
 
 def get_contract_values(contract, admin_address, owner_address):
 	"""
