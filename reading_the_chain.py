@@ -64,7 +64,7 @@ def is_ordered_block(w3, block_num):
 			max_fee = transaction.get('maxFeePerGas')
 			curr_fee = min(max_priority, max_fee - base_fee)
 		else:	# Type 0 transaction
-			curr_fee = gas_price - base fee
+			curr_fee = gas_price - base_fee
 		if curr_fee > old_fee:	# Means this fee is larger than the previous fee, so not sorted descending.
 			return False
 	return True
