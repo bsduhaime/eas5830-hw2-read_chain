@@ -68,6 +68,7 @@ def is_ordered_block(w3, block_num):
 			curr_fee = gas_price - base_fee
 		if curr_fee > old_fee:	# Means this fee is larger than the previous fee, so not sorted descending.
 			return False
+		old_fee = curr_fee
 	return True
 
 def get_contract_values(contract, admin_address, owner_address):
