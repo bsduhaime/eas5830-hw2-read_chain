@@ -50,7 +50,8 @@ def is_ordered_block(w3, block_num):
 
 	Conveniently, most type 2 transactions set the gasPrice field to be min( tx.maxPriorityFeePerGas + block.baseFeePerGas, tx.maxFeePerGas )
 	"""
-	base_fee = w3.eth.get_block(block_num, full_transactions=False).get('baseFeePerGas')	# For Type 2 transactions
+	#base_fee = w3.eth.get_block(block_num, full_transactions=False).get('baseFeePerGas')	# For Type 2 transactions
+	base_fee = w3.eth.fee_history(1, block_num)['baseFeePerGas'][0]
 	transaction_count = w3.eth.get_block_transaction_count(block_num)
 	if(transaction_count <= 0):	# empty blocks are not valid
 		return False
@@ -87,7 +88,7 @@ def get_contract_values(contract, admin_address, owner_address):
 
 	# TODO complete the following lines by performing contract calls
 	onchain_root = contract.functions.merkleRoot().call()  # Get and return the merkleRoot from the provided contract
-	has_role = default_admin_role is contract.functions.getRoleAdmin(admin_address).call()  # Check the contract to see if the address "admin_address" has the role "default_admin_role"
+	has_role = contract.functions.hasRole(default_admin_role, admin_address).call()  # Check the contract to see if the address "admin_address" has the role "default_admin_role"
 	prime = contract.functions.getPrimeByOwner(owner_address).call()  # Call the contract to get the prime owned by "owner_address"
 
 	return onchain_root, has_role, prime
