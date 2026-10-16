@@ -53,8 +53,8 @@ def is_ordered_block(w3, block_num):
 	#base_fee = w3.eth.get_block(block_num, full_transactions=False).get('baseFeePerGas')	# For Type 2 transactions
 	base_fee = w3.eth.fee_history(1, block_num)['baseFeePerGas'][0]
 	transaction_count = w3.eth.get_block_transaction_count(block_num)
-	if(transaction_count <= 0):	# empty blocks are not valid
-		return False
+	#if(transaction_count <= 0):	# empty blocks are not valid
+	#	return False
 	old_fee = float('inf')	# Start with an extremely large number for decreasing comparison
 	for i in range(transaction_count):
 		curr_fee = 0
